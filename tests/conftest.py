@@ -133,7 +133,9 @@ def test_how_to_resource(db):
         summary="not much to say, do it yourself",
         link="https://animorph.coop/",
     )
-    how_to.tags.add("how to", "urban garden", "leisure")  # Use `add` method to assign tags
+    how_to.tags.add(
+        "how to", "urban garden", "leisure"
+    )  # Use `add` method to assign tags
     return how_to
 
 

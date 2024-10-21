@@ -41,14 +41,51 @@ def active_link(context, text, *view_names, **view_params):
         return ""
 
     # Fetch our resolved route
-    current_view_name = request.resolver_match.view_name
+    try:
+        current_view_name = request.resolver_match.view_name
+    except AttributeError:
+        """
+        Django's APPEND_SLASH setting can cause issues when trying to access
+        request.resolver_match. This is because it tries to redirect requests
+        that don't have a trailing slash, which results in the loss of the
+        original request object.
+
+        In this case, we try to get the view name from the URL instead. We do
+        this by resolving the URL again with a trailing '/' appended if
+        necessary.
+        """
+        # Try to get the view name from the URL
+        from django.urls import resolve
+
+        url = request.path_info
+        if not url.endswith("/"):
+            url += "/"
+        match = resolve(url)
+        current_view_name = match.view_name
 
     # Match on route name
     if current_view_name not in view_names:
         return ""
 
     # If provided, match on the params too
-    if view_params and view_params != request.resolver_match.kwargs:
+    try:
+        kwargs_match = request.resolver_match.kwargs == view_params
+    except AttributeError:
+        """
+        Same issue as above: Django's APPEND_SLASH setting can cause issues
+        when trying to access request.resolver_match. In this case, we try
+        to get the kwargs from the URL instead.
+        """
+        # Try to get the kwargs from the URL
+        from django.urls import resolve
+
+        url = request.path_info
+        if not url.endswith("/"):
+            url += "/"
+        match = resolve(url)
+        kwargs_match = match.kwargs == view_params
+
+    if view_params and not kwargs_match:
         return ""
 
     # It passed! Give 'em the text

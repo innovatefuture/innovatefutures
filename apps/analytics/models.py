@@ -10,8 +10,8 @@ from django.http import HttpRequest
 from resources.models import Resource
 from userauth.models import CustomUser
 
-####
-## HOW THIS WORKS
+
+# HOW THIS WORKS
 #
 # when an event that we want to record for analytic purposes occurs, a corresponding function in the LOGGING FUNCTIONS section should be invoked.
 # this can happen either by catching a signal (as shown in the case of log_login) or simply by calling the function from whatever bit of code is
@@ -20,8 +20,8 @@ from userauth.models import CustomUser
 # the logging functions are very simple, but they are written here rather than in the places they get invoked from to ensure we know in a single place
 # what events are logged and how.
 
-####
-## LOGGING FUNCTIONS
+#
+# LOGGING FUNCTIONS
 #
 
 
@@ -93,8 +93,8 @@ def has_visited_today(user):
     ).exists()
 
 
-####
-## MODELS
+#
+# MODELS
 #
 
 

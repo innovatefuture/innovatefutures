@@ -27,11 +27,11 @@ def celery_worker_parameters():
 @pytest.mark.usefixtures("celery_session_worker")
 @pytest.mark.celery(
     task_always_eager=True,
-    result_backend='django-cache',
-    cache_backend='django-cache',
-    task_serializer='pickle',
-    result_serializer='pickle',
-    accept_content=['pickle']
+    result_backend="django-cache",
+    cache_backend="django-cache",
+    task_serializer="pickle",
+    result_serializer="pickle",
+    accept_content=["pickle"],
 )
 def test_create_account(client, mailoutbox):
     email_free = client.post(
