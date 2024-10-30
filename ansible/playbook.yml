@@ -148,7 +148,7 @@
 
     - name: Clone the repository
       ansible.builtin.git:
-        repo: https://github.com/animorphcoop/shared-futures-space.git
+        repo: https://github.com/innovatefuture/innovatefutures.git
         dest: "{{ project_dir }}"
         version: production
         accept_hostkey: yes
