@@ -6,16 +6,17 @@
             <li @click="openTab = 'blue'" class="{{ li_class }} bg-blue">
                 {% include "landing/tabbed-resources/title.html" with title="Collaborate" %}
             </li>
-            <li @click="openTab = 'sky'" class="{{ li_class }} bg-sky">
+            <li @click="openTab = 'sky'" class="{{ li_class }} bg-amber-200">
                 {% include "landing/tabbed-resources/title.html" with title="Learn" %}
             </li>
-            <li @click="openTab = 'sky-light'" class="{{ li_class }} bg-sky-light">
+            <li @click="openTab = 'sky-light'" class="{{ li_class }} bg-blue">
                 {% include "landing/tabbed-resources/title.html" with title="Decide" %}
             </li>
+          <li @click="openTab = 'remix-tab'" class="{{ li_class }} bg-amber-200">
+                {% include "landing/tabbed-resources/title.html" with title="Remix" %}
+            </li>
 
-            {% comment %}            <li @click="openTab = 'three'" class="{{ li_class }} bg-sky-light">
-                {% include "landing/tabbed-resources/title.html" with title="co creation" %}
-            </li>{% endcomment %}
+
         </ul>
         <div :class="`bg-${openTab}`" class="w-full pt-6 pb-9 px-4.5 min-h-[486px] sm:flex sm:items-center">
             <div x-show="openTab === 'blue'" class="sm:mx-auto sm:flex sm:flex-row-reverse sm:items-center sm:max-w-4xl">
@@ -163,6 +164,18 @@
                 </div>
 
             </div>
+
+         <div x-show="openTab === 'remix-tab'" class="sm:mx-auto sm:flex sm:flex-row-reverse sm:items-center sm:max-w-4xl">
+                <div class="px-3 sm:max-w-lg sm:mx-auto sm:w-1/2">
+                    {% include "landing/main-heading.html" with title="Transform Your Space with the Remix Tool:<br> Unleash your creativity with the Remix tool! Easily reimagine and redesign any space using our extensive library of objects. Upload your own text and images, then drag and drop them to bring your vision to life. Plus, collaborate with others by editing and enhancing their ideas to create truly unique spaces together." %}
+                </div>
+                {% include "partials/vertical-spacer.html" with space="6" %}
+           <img src="{% static 'images/dashboard/remix.png' %}"
+                alt="Description of the image" class="{{ img_class }} h-60">
+
+            </div>
+
+
         </div>
     </div>
 {% endwith %}
