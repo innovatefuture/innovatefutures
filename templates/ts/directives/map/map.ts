@@ -24,7 +24,7 @@ import {
 import {icons} from "@/templates/ts/directives/map/icons.ts"
 
 const DEFAULT_CENTER: MapCoordinates = [-5.9213, 54.5996]
-const DEFAULT_ZOOM = 12
+const DEFAULT_ZOOM = 13
 const BASE_PADDING = 80 // always have at least this much padding
 
 /**

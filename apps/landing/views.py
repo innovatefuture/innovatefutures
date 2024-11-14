@@ -42,8 +42,8 @@ def landing(request: HttpRequest) -> Union[HttpResponseRedirect, HttpResponse]:
         area = Area.objects.exclude(location=None).first()
         if area:
             context["home"] = {
-                "center": area.location.coords,
-                "zoom": area.zoom,
+                "center": ( 0.9471961688334076, 51.87786496221017),
+                "zoom": 5000,
             }
 
         return render(request, "landing/landing.html", context)
