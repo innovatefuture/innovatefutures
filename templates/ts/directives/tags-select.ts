@@ -14,7 +14,7 @@ Alpine.directive('tags-select', (
     { expression },
 ) => {
 
-    const maxTagCount = 3
+    const maxTagCount = 10
 
     const fieldName = expression
     const fieldId = `id_${fieldName}`
