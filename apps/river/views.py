@@ -553,13 +553,14 @@ class RiverStartWizardView(SharedFuturesWizardView):
         for tag in tags:
             river.tags.add(tag)
 
-        try:
-            post_code = PostCode.objects.all().filter(code=self.request.user.post_code)[
-                0
-            ]
-            river.area = post_code.area
-        except PostCode.DoesNotExist:
-            pass
+        # try:
+        #     post_code = PostCode.objects.all().filter(code=self.request.user.post_code)[
+        #         0
+        #     ]
+        #     print(post_code)
+        #     river.area = post_code.area
+        # except PostCode.DoesNotExist:
+        #     pass
 
         river.save()
         river.start_envision()
