@@ -1,10 +1,10 @@
 <div class="flex flex-col desktop:flex-row gap-6">
     <div class="basis-1/2 flex flex-col gap-6">
         <div>
-            <label for="subject" class="block pb-2.5 uppercase font-kanit-600 font-medium text-xxs tracking-widest text-black/75">
+            <label for="subject" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
                 Subject
             </label>
-            <select id="subject" name="subject" class="input-text {% if style == 'primary_colour' %}bg-white{% endif %}" tabindex="1">
+            <select id="subject" name="subject" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="1">
                 <option value="resources">Suggest resources</option>
                 <option value="feedback">Send your feedback</option>
                 <option value="rollout">Enquire about roll out in your area</option>
@@ -17,41 +17,41 @@
         </div>
 
         <div>
-            <label for="email" class="block pb-2.5 uppercase font-kanit-600 font-medium text-xxs tracking-widest text-black/75">
+            <label for="email" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
                 Email
             </label>
-            <input type="email" name="email" id="email" class="input-text {% if style == 'primary_colour' %}bg-white{% endif %}" tabindex="2" required>
+            <input type="email" name="email" id="email" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="2" required>
         </div>
 
         <div class="hidden desktop:block">
-            <button class="button {% if style == 'primary_colour' %}button-on-colour{% else %}button-on-white{% endif %}" tabindex="4" type="submit">Send</button>
+            <button class="button bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600 transition ease-in-out duration-200" tabindex="4" type="submit">Send</button>
         </div>
     </div>
 
     <div class="basis-1/2">
-        <label for="message" class="block pb-2.5 uppercase font-kanit-600 font-medium text-xxs tracking-widest text-black/75">
+        <label for="message" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
             Message
         </label>
-        <textarea name="message" id="message" cols="30" rows="12" class="input-text {% if style == 'primary_colour' %}bg-white{% endif %}" tabindex="3"></textarea>
+        <textarea name="message" id="message" cols="30" rows="12" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="3"></textarea>
     </div>
 
     <div class="desktop:hidden">
-        <button class="button {% if style == 'primary_colour' %}button-on-colour{% else %}button-on-white{% endif %}" tabindex="4" type="submit">Send</button>
+        <button class="button bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600 transition ease-in-out duration-200" tabindex="4" type="submit">Send</button>
     </div>
 </div>
 
 {% if form.errors %}
-    <div class="text-body bg-red-light p-4 px-6">
-        <div>
+    <div class="bg-red-100 border border-red-400 text-red-700 p-4 rounded-md mt-4">
+        <strong class="font-semibold">Errors:</strong>
+        <ul class="mt-2">
             {% for field, errors in form.errors.items %}
-                <div>
-                    {{ field }}:
-
+                <li>
+                    <strong>{{ field }}:</strong>
                     {% for error in errors %}
-                        {{ error }}
+                        <span class="block">{{ error }}</span>
                     {% endfor %}
-                </div>
+                </li>
             {% endfor %}
-        </div>
+        </ul>
     </div>
 {% endif %}
