@@ -1,4 +1,14 @@
 {% load custom_filters %}
+{% load static %}
+{% load custom_tags %}
+{% load custom_filters %}
+
+{% load area_details %}
+{% get_areas as areas %}
+
+{% block extra_css %}
+
+{% endblock extra_css %}
 
 <div class="relative w-full h-full overflow-hidden"
      x-data="{

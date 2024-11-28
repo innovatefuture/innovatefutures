@@ -7,6 +7,10 @@ from django.urls import reverse
 from map.markers import river_marker
 from remix.models import RemixIdea
 from river.models import River
+from resources.models import CaseStudy, HowTo
+from map.markers import case_study_marker, river_marker
+
+
 
 
 def landing(request: HttpRequest) -> Union[HttpResponseRedirect, HttpResponse]:
@@ -22,17 +26,19 @@ def landing(request: HttpRequest) -> Union[HttpResponseRedirect, HttpResponse]:
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse("dashboard"))
     else:
-        rivers = River.objects.exclude(location=None)
         markers = []
-        for river in rivers:
-            marker = river_marker(river)
+
+        for how_to in HowTo.objects.exclude(location=None):
+            marker = case_study_marker(how_to)
             if marker:
                 markers.append(marker)
+
 
         for idea in RemixIdea.objects.exclude(location=None):
             marker = idea.marker
             if marker:
                 markers.append(marker)
+
 
         context = {"markers": markers}
 
