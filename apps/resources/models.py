@@ -6,6 +6,7 @@ from django.contrib.gis.db.models import PointField
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.forms import forms
 from django.utils.text import slugify
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
@@ -20,7 +21,53 @@ from apps.core.utils.slugifier import generate_random_string
 from apps.streams import blocks
 
 
+lass HowToAdminForm(forms.ModelForm):
+    tags = forms.ModelMultipleChoiceField(
+        queryset=CustomTag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        label="Tags",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        grouped_tags = {}
+        for tag in CustomTag.objects.all():
+            category_name = tag.category.name if tag.category else "Uncategorized"
+            grouped_tags.setdefault(category_name, []).append(tag)
+
+        # Create a field for each category
+        for category, tags in grouped_tags.items():
+            self.fields[f"category_{category}"] = forms.ModelMultipleChoiceField(
+                queryset=CustomTag.objects.filter(category__name=category),
+                widget=forms.CheckboxSelectMultiple,
+                label=f"Tags for {category}",
+                required=False,
+                initial=self.instance.tags.filter(category__name=category) if self.instance.pk else None,
+            )
+
+    def save(self, commit=True):
+        # Gather selected tags from all category fields
+        selected_tags = []
+        for field_name, field in self.fields.items():
+            if field_name.startswith("category_"):
+                selected_tags.extend(self.cleaned_data.get(field_name))
+
+        self.instance.tags.set(selected_tags)  # Update the tags
+        return super().save(commit)
+
+
+class TagCategory(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class CustomTag(TaggitTag):
+    category = models.ForeignKey(
+        TagCategory, on_delete=models.CASCADE, related_name="tags", null=True, blank=True
+    )
+
     class Meta:
         verbose_name = "Tag"
         verbose_name_plural = "Tags"
@@ -29,6 +76,9 @@ class CustomTag(TaggitTag):
         if not self.pk and CustomTag.objects.filter(name__iexact=self.name).exists():
             return CustomTag.objects.get(name__iexact=self.name)
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.name} ({self.category.name if self.category else 'No Category'})"
 
 
 class ResourceTag(TaggedItemBase):
@@ -101,6 +151,14 @@ def handle_pre_save(sender, instance, *args, **kwargs):
 
 
 class HowTo(Resource):
+    selected_category = models.ForeignKey(
+        TagCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="howto_resources",
+        verbose_name="Category",
+    )
     class Meta:
         verbose_name = "How To"
         verbose_name_plural = "How Tos"
@@ -109,7 +167,7 @@ class HowTo(Resource):
         FieldPanel("title"),
         FieldPanel("summary"),
         FieldPanel("link"),
-        FieldPanel("tags"),
+        FieldPanel("tags", widget=forms.CheckboxSelectMultiple),  # Placeholder for the custom widget
         LeafletPanel("location"),
     ]
 
