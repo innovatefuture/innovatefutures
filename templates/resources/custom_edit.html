@@ -1,0 +1,13 @@
+{% extends "wagtailadmin/generic/edit.html" %}
+{% block form %}
+    {{ block.super }}
+    <h3>Tags by Category</h3>
+    {% for field in form %}
+        {% if field.name.startswith "tags_" %}
+            <div>
+                {{ field.label_tag }} {{ field }}
+                {% if field.help_text %}<p>{{ field.help_text }}</p>{% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

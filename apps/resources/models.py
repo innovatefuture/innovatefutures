@@ -1,12 +1,10 @@
 from typing import Optional
 from uuid import uuid4
 
-from core.utils.tags_declusterer import tag_cluster_to_list
 from django.contrib.gis.db.models import PointField
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from django.forms import forms
 from django.utils.text import slugify
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
@@ -18,42 +16,9 @@ from wagtail.fields import StreamField
 from wagtailgeowidget.panels import LeafletPanel
 
 from apps.core.utils.slugifier import generate_random_string
+from apps.core.utils.tags_declusterer import tag_cluster_to_list
 from apps.streams import blocks
 
-
-lass HowToAdminForm(forms.ModelForm):
-    tags = forms.ModelMultipleChoiceField(
-        queryset=CustomTag.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        label="Tags",
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        grouped_tags = {}
-        for tag in CustomTag.objects.all():
-            category_name = tag.category.name if tag.category else "Uncategorized"
-            grouped_tags.setdefault(category_name, []).append(tag)
-
-        # Create a field for each category
-        for category, tags in grouped_tags.items():
-            self.fields[f"category_{category}"] = forms.ModelMultipleChoiceField(
-                queryset=CustomTag.objects.filter(category__name=category),
-                widget=forms.CheckboxSelectMultiple,
-                label=f"Tags for {category}",
-                required=False,
-                initial=self.instance.tags.filter(category__name=category) if self.instance.pk else None,
-            )
-
-    def save(self, commit=True):
-        # Gather selected tags from all category fields
-        selected_tags = []
-        for field_name, field in self.fields.items():
-            if field_name.startswith("category_"):
-                selected_tags.extend(self.cleaned_data.get(field_name))
-
-        self.instance.tags.set(selected_tags)  # Update the tags
-        return super().save(commit)
 
 
 class TagCategory(models.Model):
@@ -167,7 +132,7 @@ class HowTo(Resource):
         FieldPanel("title"),
         FieldPanel("summary"),
         FieldPanel("link"),
-        FieldPanel("tags", widget=forms.CheckboxSelectMultiple),  # Placeholder for the custom widget
+        FieldPanel("tags"),  # Placeholder for the custom widget
         LeafletPanel("location"),
     ]
 
