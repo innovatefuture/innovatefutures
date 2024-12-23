@@ -3,6 +3,8 @@ from typing import Optional
 from django.db.models import Q
 from messaging.models import Chat
 from resources.models import Resource
+from resources.models import TagCategory
+
 
 from .models import ActStage, EnvisionStage, PlanStage, ReflectStage, River
 
@@ -34,14 +36,14 @@ def get_chat_containing_river(chat: Chat) -> Optional[River]:
     return None
 
 
-def get_resource_tags() -> list[str]:
-    tags = []
-    resources = Resource.objects.all()
+def get_resource_tags() -> list[dict]:
+    categories = TagCategory.objects.prefetch_related('tags').all()
+    tags_by_category = []
 
-    for resource in resources:
-        for tag in resource.tags.names():
-            if tag.lower() not in tags:
-                tags.append(tag.lower())
+    for category in categories:
+        tags_by_category.append({
+            "category_name": category.name,
+            "tags": [tag.name for tag in category.tags.all()]
+        })
 
-    tags.sort()
-    return tags
+    return tags_by_category

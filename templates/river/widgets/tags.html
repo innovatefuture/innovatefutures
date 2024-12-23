@@ -1,27 +1,95 @@
 {% comment %}
-
-    Template for django widget to select tags.
-
+    Template for django widget to select tags with categories.
     All the logic is handled by the x-tags-select directive.
-
 {% endcomment %}
 
 <div x-tags-select="{{ widget.name }}">
-    <input type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+    <input
+        type="{{ widget.type }}"
+        name="{{ widget.name }}"
+        {% if widget.value != None %} value="{{ widget.value }}" {% endif %}
+        {% include "django/forms/widgets/attrs.html" %}
+    >
 
-    <div class="flex flex-wrap gap-5 -m-1">
+    <div class="tabs-container">
         {% if tags %}
-            {% for tag in tags %}
-                {% with counter=forloop.counter0 %}
-
-                    <button id="button-{{ counter }}"
-                            class="px-1.5 py-1.5 rounded-sm flex items-center data-[selected]:bg-green"
-                            data-tag="{{ tag }}">
-                        <span class="text-meta-label text-black/55 uppercase leading-none whitespace-normal tracking-[0.16em]">{{ tag }}</span>
+            <!-- Tabs -->
+            <div class="tabs flex border-b mb-4">
+                {% for category in tags %}
+                    <button
+                        class="tab-button px-4 py-2 -mb-px border border-transparent hover:border-gray-300 text-gray-600"
+                        data-tab="{{ category.category_name|slugify }}"
+                        {% if forloop.first %} class="active" {% endif %}
+                    >
+                        {{ category.category_name }}
                     </button>
-                {% endwith %}
+                {% endfor %}
+            </div>
 
-            {% endfor %}
+            <!-- Tab Contents -->
+            <div class="tab-content-container">
+                {% for category in tags %}
+                    <div
+                        class="tab-content hidden"
+                        id="tab-{{ category.category_name|slugify }}"
+                        {% if forloop.first %} class="active" {% endif %}
+                    >
+                        <div class="tags-container flex flex-wrap gap-2">
+                            {% for tag in category.tags %}
+                                <button
+                                    class="tag-button px-1.5 py-1.5 rounded-sm flex items-center data-[selected]:bg-green"
+                                    data-tag="{{ tag }}"
+                                >
+                                    <span class="text-meta-label text-black/55 uppercase leading-none whitespace-normal tracking-[0.16em]">
+                                        {{ tag }}
+                                    </span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabs = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Deactivate all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Hide all tab contents
+                tabContents.forEach(content => content.classList.add('hidden'));
+
+                // Activate the clicked tab
+                tab.classList.add('active');
+                // Show the corresponding tab content
+                const tabContentId = `tab-${tab.dataset.tab}`;
+                document.getElementById(tabContentId).classList.remove('hidden');
+            });
+        });
+
+        // Set the initial active tab
+        if (tabs.length > 0) {
+            tabs[0].click();
+        }
+    });
+</script>
+
+<style>
+    .hidden {
+        display: none;
+    }
+
+    .active {
+        border-b border-black text-black font-bold;
+    }
+
+    .tabs .tab-button.active {
+        border-bottom: 2px solid black;
+    }
+</style>
