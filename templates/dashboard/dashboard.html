@@ -1,47 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
-{% load area_details %}
 
 {% block body_class %}template-homepage{% endblock %}
 
 {% block extra_css %}
-    <style>
-        /* Additional custom styles for the dashboard */
-        .cta-section {
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .cta-section.bg-yellow {
-            background-color: #facc15; /* Yellow */
-        }
-        .cta-section.bg-sky {
-            background-color: #0ea5e9; /* Sky blue */
-        }
-        .cta-button {
-            display: inline-block;
-            padding: 12px 24px;
-            font-weight: 600;
-            border-radius: 8px;
-            color: #ffffff;
-            background-color: #3b82f6; /* Primary blue */
-            text-decoration: none;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .cta-button:hover {
-            background-color: #2563eb;
-            transform: translateY(-3px);
-        }
-        .section {
-            margin-bottom: 2rem;
-        }
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: bold;
-            color: #1e293b; /* Slate */
-            margin-bottom: 1rem;
-        }
-    </style>
+
 {% endblock extra_css %}
 
 {% block content %}
@@ -50,13 +13,13 @@
 
     {% if request.user.post_code.area.name != 'Other' %}
         <section>
-            <div id="initial">
+            <div id="initial" class="">
                 {% include 'dashboard/partials/location.html' %}
             </div>
         </section>
     {% endif %}
 
-    <div class="lg:grid grid-cols-4 gap-9 gap-y-9 max-w-screen-xl lg:mx-auto lg:pb-9 section">
+    <div class="lg:grid grid-cols-4 gap-9 gap-y-9 max-w-screen-xl lg:mx-auto lg:pb-9">
         <div class="col-span-2">
             {% include "dashboard/partials/tasks.html" with title="Your tasks" reference="tasks" %}
             {% include "dashboard/partials/resources.html" with title="Saved resources" reference="resources" %}
@@ -67,40 +30,59 @@
                 {% include "dashboard/partials/rivers.html" with title="Your rivers" reference="rivers" %}
                 {% include "dashboard/partials/ideas.html" with title="Your remix ideas" reference="ideas" %}
             {% else %}
-                <section class="cta-section bg-sky">
-                    <div class="flex flex-col gap-4 items-center py-9 px-4.5">
-                        <p class="section-title">
+                <section class="bg-sky">
+                    <div class="flex flex-col gap-6 items-center py-9 px-4.5 text-center">
+                        <p class="text-large text-22">
                             Which spring would you like to explore?
                         </p>
+                        {% load area_details %}
                         {% get_areas as areas_dict %}
-                        <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
-                            {% for key, area in areas_dict.items %}
-                                <a href="{% url "spring" key %}" class="cta-button">
-                                    {{ area.name }}
-                                </a>
-                            {% endfor %}
-                        </div>
+                        {% for key, area in areas_dict.items %}
+                            <a href="{% url "spring" key %}"
+                               class="button button-on-colour inline-block">
+                                {{ area.name }}
+                            </a>
+                        {% endfor %}
                     </div>
                 </section>
             {% endif %}
         </div>
     </div>
 
-    <div class="desktop:flex w-full lg:pb-9 justify-center">
-        {% url 'account_all_chats' as the_url %}
-        <div class="cta-section bg-yellow grow">
-            {% include "partials/call-to-action.html" with main="Continue the conversations" button="View messages" url=the_url info="" bg="bg-yellow" %}
-        </div>
+    {% comment %}Include in v2{% endcomment %}
+    {% comment %}
+    {% include "dashboard/partials/notifications.html" with title="Notifications" reference="notifications" %}
+{% endcomment %}
 
+    <div class="desktop:flex w-full lg:pb-9 justify-center">
+        {# Messages #}
+        {#  Call to action partial, replace URL variable  #}
+        {% url 'account_all_chats' as the_url %}
+        <div class="bg-yellow grow"></div>
+        {% include "partials/call-to-action.html" with main="Continue the conversations" button="View messages" url=the_url info="" bg="bg-yellow" %}
+
+        {#  Call to action partial, replace URL variable  #}
         {% if request.user.post_code.area.name != 'Other' %}
-            <div class="cta-section bg-sky mx-6">
-                {% url 'spring' request.user.post_code.area.name as the_url %}
-                {% include "partials/call-to-action.html" with main="Ready to swim?" button="Get involved" url=the_url info="" bg="bg-sky" %}
-            </div>
+            <div class="bg-yellow w-24"></div>
+            <div class="bg-sky w-24"></div>
+
+            {% url 'spring' request.user.post_code.area.name as the_url %}
+            {% include "partials/call-to-action.html" with main="Ready to swim?" button="Get involved" url=the_url info="" bg="bg-sky" %}
+            <div class="bg-sky grow"></div>
+        {% else %}
+            <div class="bg-yellow grow"></div>
         {% endif %}
     </div>
 
-    <div class="max-w-screen-desktop mx-auto section">
+    {% comment %}
+      TODO: Is this true?
+      {% if user.is_staff %}
+        <br/>
+        <a href="{% url 'account_request_panel' %}">Manage User Requests</a>
+      {% endif %}
+    {% endcomment %}
+
+    <div class="max-w-screen-desktop mx-auto">
         {% include "dashboard/partials/get_in_touch.html" with title="Get in touch" reference="get_in_touch" %}
     </div>
 
