@@ -9,5 +9,5 @@
         reverse_proxy 127.0.0.1:9000
     }
 
-    tls internal
+    tls {{ env_vars.EMAIL_HOST_USER }}
 }
