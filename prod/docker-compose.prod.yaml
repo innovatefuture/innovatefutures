@@ -56,7 +56,7 @@ services:
       args:
         USERID: $USER_ID
         GROUPID: $GROUP_ID
-    command: bash -c "celery -A sfs worker -B -l DEBUG"
+    command: bash -c "celery -A sfs worker -B -l info"
     env_file:
       - .env.prod
     volumes:
