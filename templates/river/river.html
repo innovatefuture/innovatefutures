@@ -78,60 +78,13 @@
                 </div>
 
                 {# River stages; envision, plan, act, reflect #}
-<div class="mx-auto max-w-4xl mt-6">
-    <!-- Tab Headers -->
-    <div class="tabs flex border-b border-gray-300 space-x-4">
-        <button
-            class="tab-header flex-1 text-center py-2 px-10 cursor-pointer border-b-2 border-transparent text-gray-500 hover:text-blue-500 flex items-center justify-center"
-            data-tab="envision">
-            Envision
-        </button>
-        <button
-            class="tab-header flex-1 text-center py-2 px-10 cursor-pointer border-b-2 border-transparent text-gray-500 hover:text-blue-500 flex items-center justify-center"
-            data-tab="plan">
-            Plan
-            {% if plan_locked %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z" clip-rule="evenodd" />
-                </svg>
-            {% endif %}
-        </button>
-        <button
-            class="tab-header flex-1 text-center py-2 px-10 cursor-pointer border-b-2 border-transparent text-gray-500 hover:text-blue-500 flex items-center justify-center"
-            data-tab="act">
-            Act
-            {% if act_locked %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z" clip-rule="evenodd" />
-                </svg>
-            {% endif %}
-        </button>
-        <button
-            class="tab-header flex-1 text-center py-2 px-10 cursor-pointer border-b-2 border-transparent text-gray-500 hover:text-blue-500 flex items-center justify-center"
-            data-tab="reflect">
-            Reflect
-            {% if reflect_locked %}
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v2H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-2 6V6a2 2 0 114 0v2H8z" clip-rule="evenodd" />
-                </svg>
-            {% endif %}
-        </button>
-    </div>
-
-    <!-- Tab Content -->
-    <div class="tab-content" data-tab="envision">
-        {% include "river/envision.html" with title="" reference="envision" id="envision" locked=envision_locked %}
-    </div>
-    <div class="tab-content hidden" data-tab="plan">
-        {% include "river/plan.html" with title="" reference="plan" id="plan" locked=plan_locked %}
-    </div>
-    <div class="tab-content hidden" data-tab="act">
-        {% include "river/act.html" with title="" reference="act" id="act" locked=act_locked %}
-    </div>
-    <div class="tab-content hidden" data-tab="reflect">
-        {% include "river/reflect.html" with title="" reference="reflect" id="reflect" locked=reflect_locked %}
-    </div>
-</div>
+                <section class="-mx-4.5 lg:mx-0 col-span-2"> {# Large layout, middle two columns #}
+                    {% include "river/envision.html" with title="envision stage" reference="envision" id="envision" locked=envision_locked %}
+                    {% include "river/plan.html" with title="plan stage" reference="plan" id="plan" locked=plan_locked %}
+                    {% include "river/act.html" with title="act stage" reference="act" id="act" locked=act_locked %}
+                    {% include "river/reflect.html" with title="reflect stage" reference="reflect" id="reflect" locked=reflect_locked %}
+                    {% include "partials/vertical-spacer.html" with space="20" %} {# Keeps space around the salmon so he doesn't cover drawer titles on small screens #}
+                </section>
 
                 {# River information; stage bookmarks, resources. At end so knowledge salmon is always on top #}
                 <section class="-mx-4.5 lg:mx-0 col-span-1 lg:justify-items-end"> {# Large layout, last column #}
@@ -144,7 +97,12 @@
                         {% endif %}
 
                         {# Stage outline #}
-
+                        <ul class="hidden lg:flex flex-col gap-3 text-right">
+                            <li><a href="#envision" class="button button-on-white button-secondary {% if object.current_stage == 'envision' %}button-important{% endif %}">Envision</a></li>
+                            <li><a href="#plan" class="button button-on-white button-secondary {% if object.current_stage == 'plan' %}button-important{% endif %}">Plan</a></li>
+                            <li><a href="#act" class="button button-on-white button-secondary {% if object.current_stage == 'act' %}button-important{% endif %}">Act</a></li>
+                            <li><a href="#reflect" class="button button-on-white button-secondary {% if object.current_stage == 'reflect' %}button-important{% endif %}">Reflect</a></li>
+                        </ul>
                         <div id="modal-container" class="invisible">
                             {% include "river/resources.html" %}
                         </div>
@@ -170,37 +128,31 @@
         TODO: Put me in typescript
         {% endcomment %}
         <script>
-    // Tab Switching Logic
-    document.addEventListener('DOMContentLoaded', () => {
-        const tabHeaders = document.querySelectorAll('.tab-header');
-        const tabContents = document.querySelectorAll('.tab-content');
+            if (typeof stopBodyScroll !== 'undefined' && typeof enableBodyScroll !== 'undefined') {
 
-        tabHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                const selectedTab = header.getAttribute('data-tab');
-
-                // Update Tab Headers
-                tabHeaders.forEach(tab => {
-                    tab.classList.remove('border-blue-500', 'text-blue-500');
-                    tab.classList.add('text-gray-500');
+                const stopBodyScroll = () => {
+                    const scrollY = document.documentElement.style.getPropertyValue('--scroll-y');
+                    const body = document.body;
+                    body.style.position = 'fixed';
+                    body.style.top = `-${scrollY}`;
+                };
+                const enableBodyScroll = () => {
+                    const body = document.body;
+                    const scrollY = body.style.top;
+                    body.style.position = '';
+                    body.style.top = '';
+                    window.scrollTo(0, parseInt(scrollY || '0') * -1);
+                }
+                window.addEventListener('scroll', () => {
+                    document.documentElement.style.setProperty('--scroll-y', `${window.scrollY}px`);
                 });
-                header.classList.add('border-blue-500', 'text-blue-500');
 
-                // Update Tab Contents
-                tabContents.forEach(content => {
-                    if (content.getAttribute('data-tab') === selectedTab) {
-                        content.classList.remove('hidden');
-                    } else {
-                        content.classList.add('hidden');
-                    }
-                });
-            });
-        });
 
-        // Activate the first tab by default
-        tabHeaders[0].click();
-    });
-</script>
+            }
+            document.getElementById('show-modal').addEventListener('click', () => {
+                document.getElementById('modal-container').classList.remove('invisible');
+            })
+        </script>
     {% endblock %}
 
     {% comment %}stopBodyScroll() and enableBodyScroll() need to be extracted
