@@ -114,5 +114,5 @@ urlpatterns: List[Union[URLResolver, URLPattern]] = [
         DeleteTaskView.as_view(),
         name="river_task_delete",
     ),
-    # path('change/title/<str:slug>/', ManageRiverView.as_view(template_name='swimmers_list.html'), name='manage_river'),
+
 ]

@@ -72,18 +72,26 @@ class ChatView(TemplateView):
         """Create the new message"""
         request = self.request
         chat_form = ChatForm(request.POST, request.FILES)
+
         if chat_form.is_valid():
             chat_form.full_clean()
+
+            # Attempt to get the River instance from the context or chat
+            river = context.get("river") or get_chat_containing_river(chat)
+
+            # Create the new message
             message = Message.objects.create(
                 sender=request.user,
                 text=chat_form.cleaned_data.get("text", None),
                 image=chat_form.cleaned_data.get("image", None),
                 file=chat_form.cleaned_data.get("file", None),
                 chat=chat,
+                context_river=river,  # Assign the River instance
             )
+
             return self.render_message(message, context)
 
-        # TODO: should it be status 400?
+        # Return error response if form is invalid
         return HttpResponse(
             "<span class='block text-body text-red text-center'>Sorry, the file format not supported.</span>"
         )
@@ -142,3 +150,4 @@ class ChatUpdateCheck(View):
             chat = river.get_chat(kwargs["stage"], kwargs["topic"])
             message_list = Message.objects.all().filter(chat=chat).order_by("timestamp")
             return HttpResponse(message_list.count())
+
