@@ -1,7 +1,10 @@
 from typing import List, Union
 
+from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
 from django.urls import URLPattern, URLResolver, path
+
+from sfs import settings
 from task.views import (
     CreateTaskView,
     DeleteTaskView,

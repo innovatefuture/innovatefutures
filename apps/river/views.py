@@ -2,6 +2,8 @@ import os
 from itertools import chain
 from typing import Any, Dict, List, Type
 
+from django.template.loader import render_to_string
+
 import river
 from action.models import Action
 from action.util import send_offer
@@ -41,25 +43,40 @@ from .forms import (
 from .models import River, RiverMembership, File
 
 
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils import timezone
+from .models import River, File, RiverMembership
+from django.db.models import Q
+from itertools import chain
+from resources.models import HowTo, CaseStudy
+from messaging.models import Message
+
+
 class RiverView(DetailView):
     template_name = "river.html"
     model = River
 
-    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         river = self.get_object()  # Fetch the current River instance
-        context["files"] = river.files.all()  # Add files to the context
+
+        # Add files and other context variables
+        context["files"] = river.files.all()  # Files uploaded to the river
         context["starters"] = RiverMembership.objects.filter(river=river, starter=True)
         context["user"] = self.request.user
         context["slug"] = river.slug
         context["members"] = RiverMembership.objects.filter(river=river)
+        context["MEDIA_URL"] = settings.MEDIA_URL
 
         # Fetch messages and filter for files
         messages = Message.objects.filter(context_river=river)
         context["messages"] = messages
-        context["files"] = messages.filter(file__isnull=False)  # Only messages with files
+        context["files"] = river.files.all()  # Override to ensure only river files are displayed
 
-        # Additional context for resources and other details
+        # Additional context for resources
         context["resources"] = list(
             dict.fromkeys(
                 chain(
@@ -94,15 +111,32 @@ class RiverView(DetailView):
         return context
 
     def post(self, request, slug, *args, **kwargs):
-        river = get_object_or_404(River, slug=slug)  # Get the River instance
-        if "file" in request.FILES:  # Check if a file is included in the POST data
+        """
+        Handles file uploads and updates the uploaded files section dynamically using HTMX.
+        """
+        river = get_object_or_404(River, slug=slug)
+
+        # Handle file upload
+        if "file" in request.FILES:
             uploaded_file = request.FILES["file"]
             File.objects.create(
                 river=river,
                 file=uploaded_file,
                 uploaded_at=timezone.now(),
             )
-        return HttpResponseRedirect(reverse("river_files", kwargs={"slug": slug}))
+
+        # If HTMX request, return the updated files section
+        if request.headers.get("HX-Request"):
+            files = river.files.all()
+            rendered_section = render_to_string(
+                "river/partials/uploaded_files_section.html",
+                {"files": files, "MEDIA_URL": settings.MEDIA_URL},
+                request=request,
+            )
+            return HttpResponse(rendered_section)
+
+        # If not an HTMX request, redirect back to the river detail page
+        return HttpResponseRedirect(request.path)
 
 
 class EditRiverView(UpdateView):
