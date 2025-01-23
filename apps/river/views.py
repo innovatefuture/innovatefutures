@@ -38,7 +38,7 @@ from .forms import (
     RiverLocationUpdateForm,
     RiverTitleUpdateForm,
 )
-from .models import River, RiverMembership
+from .models import River, RiverMembership, File
 
 
 class RiverView(DetailView):
@@ -48,6 +48,7 @@ class RiverView(DetailView):
     def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         river = self.get_object()  # Fetch the current River instance
+        context["files"] = river.files.all()  # Add files to the context
         context["starters"] = RiverMembership.objects.filter(river=river, starter=True)
         context["user"] = self.request.user
         context["slug"] = river.slug
@@ -90,8 +91,19 @@ class RiverView(DetailView):
             or river.current_stage == River.Stage.PLAN
         )
         context["reflect_locked"] = river.current_stage != River.Stage.REFLECT
-
         return context
+
+    def post(self, request, slug, *args, **kwargs):
+        river = get_object_or_404(River, slug=slug)  # Get the River instance
+        if "file" in request.FILES:  # Check if a file is included in the POST data
+            uploaded_file = request.FILES["file"]
+            File.objects.create(
+                river=river,
+                file=uploaded_file,
+                uploaded_at=timezone.now(),
+            )
+        return HttpResponseRedirect(reverse("river_files", kwargs={"slug": slug}))
+
 
 class EditRiverView(UpdateView):
     model = River

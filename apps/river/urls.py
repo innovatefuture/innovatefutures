@@ -115,4 +115,11 @@ urlpatterns: List[Union[URLResolver, URLPattern]] = [
         name="river_task_delete",
     ),
 
+path(
+    "view/<str:slug>/files/",
+    RiverView.as_view(),
+    name="river_files",
+),
+
+
 ]

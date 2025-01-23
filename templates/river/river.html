@@ -152,7 +152,6 @@
           </div>
         </section>
 
-
         {# River information; stage bookmarks, resources. At end so knowledge salmon is always on top #}
         <section class="-mx-4.5 lg:mx-0 col-span-1 lg:justify-items-end"> {# Large layout, last column #}
           <div class="lg:sticky lg:top-2 z-10">
@@ -181,6 +180,61 @@
             </div>
           </div>
         </section>
+
+        <section class="-mx-4.5 lg:mx-0 col-span-1 lg:justify-items-end"> {# Large layout, last column #}
+          <div class="lg:sticky lg:top-2 z-10">
+            {# File Upload Section #}
+            <div class="bg-white p-4 shadow-lg rounded-lg mb-6">
+              <h2 class="text-xl font-semibold text-gray-700 mb-3">Upload Files</h2>
+              <form
+                method="post"
+                enctype="multipart/form-data"
+                action="{% url 'river_files' slug=object.slug %}"
+                class="space-y-3"
+              >
+                {% csrf_token %}
+                <div class="flex items-center">
+                  <input
+                    type="file"
+                    name="file"
+                    id="file-upload"
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition"
+                >
+                  Upload
+                </button>
+              </form>
+            </div>
+
+            {# Display Uploaded Files #}
+            <div class="bg-white p-4 shadow-lg rounded-lg">
+              <h2 class="text-xl font-semibold text-gray-700 mb-3">Uploaded Files</h2>
+              <ul class="space-y-2">
+                {% for file in files %}
+                  <li class="flex items-center justify-between p-2 border rounded-md">
+                    <a
+                      href="{{ file.file }}"
+                      target="_blank"
+                      class="text-blue-500 hover:underline truncate"
+                    >
+                      {{ file.file.name }}
+                    </a>
+                    <span class="text-sm text-gray-500">
+              {{ file.uploaded_by.username }} - {{ file.timestamp|date:"M d, Y" }}
+            </span>
+                  </li>
+                {% empty %}
+                  <p class="text-gray-500 text-sm">No files uploaded yet.</p>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </section>
+
       </div>
     </div>
   </div>
