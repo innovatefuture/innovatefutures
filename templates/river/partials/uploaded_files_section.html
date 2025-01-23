@@ -1,0 +1,17 @@
+{% load custom_filters %}
+<ul class="space-y-2">
+  {% for file in files %}
+    <li class="flex items-center justify-between p-2 border rounded-md">
+      <a
+        href="{{ MEDIA_URL }}{{ file.file.name }}"
+        target="_blank"
+        class="text-blue-500 hover:underline truncate"
+      >
+        {{ file.file.name|basename }}
+      </a>
+
+    </li>
+  {% empty %}
+    <p class="text-gray-500 text-sm">No files uploaded yet.</p>
+  {% endfor %}
+</ul>
