@@ -47,6 +47,7 @@ services:
     depends_on:
       - redis-overcommit
 
+
   celery:
     container_name: celery
     restart: always

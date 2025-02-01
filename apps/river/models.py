@@ -215,6 +215,17 @@ def get_default_other_area() -> int:
     # this is bad, instead should not need a default but should specify every time a river is created
     return Area.objects.get_or_create(name="Other")[0].pk
 
+# river/models.py
+
+class File(models.Model):
+    river = models.ForeignKey(
+        "river.River", related_name="files", on_delete=models.CASCADE
+    )
+    file = models.FileField(upload_to="rivers/files/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name
 
 class River(ClusterableModel):
     class Stage(models.TextChoices):

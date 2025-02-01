@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Iterable, List, Optional, TypeVar
 
 from django import template
@@ -9,6 +10,11 @@ register = template.Library()
 
 T = TypeVar("T")
 
+
+@register.filter
+def basename(value):
+    """Extracts the base name of a file from its path."""
+    return os.path.basename(value)
 
 @register.filter(name="attrmap")
 def attrmap(value: Iterable[T], arg: str) -> List[T]:

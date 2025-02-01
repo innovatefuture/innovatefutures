@@ -2,6 +2,9 @@ import os
 from itertools import chain
 from typing import Any, Dict, List, Type
 
+from django.template.loader import render_to_string
+
+import river
 from action.models import Action
 from action.util import send_offer
 from area.models import PostCode
@@ -12,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.http.request import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -37,49 +40,43 @@ from .forms import (
     RiverLocationUpdateForm,
     RiverTitleUpdateForm,
 )
-from .models import River, RiverMembership
+from .models import River, RiverMembership, File
+
+
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.utils import timezone
+from .models import River, File, RiverMembership
+from django.db.models import Q
+from itertools import chain
+from resources.models import HowTo, CaseStudy
+from messaging.models import Message
 
 
 class RiverView(DetailView):
     template_name = "river.html"
     model = River
 
-    def post(self, request: WSGIRequest, slug: str) -> HttpResponse:
-        river = River.objects.get(slug=slug)
-        if request.POST["action"] == "leave":
-            membership = RiverMembership.objects.get(user=request.user, river=river)
-            if (
-                not membership.starter
-            ):  # reject starter's attempting to leave, this is not supported by the interface - you should rescind ownership first, because you won't be allowed to if you're the last starter left.
-                membership.delete()
-                # if to notify for each, need to know the current river stage and post to general
-
-        if request.POST["action"] == "join":
-            if (
-                len(RiverMembership.objects.filter(user=request.user, river=river)) == 0
-                and request.user.post_code.area == river.area
-            ):
-                RiverMembership.objects.create(
-                    user=request.user, river=river, starter=False
-                )
-                # if to notify for each, need to know the current river stage and post to general
-
-                if len(RiverMembership.objects.filter(river=river)) == 3:
-                    send_system_message(
-                        kind="salmon_envision_poll_available",
-                        chat=river.envision_stage.general_chat,
-                        context_river=river,
-                    )
-        return super().get(request, slug)
-
-    def get_context_data(self, **kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["starters"] = RiverMembership.objects.filter(
-            river=context["object"].pk, starter=True
-        )
+        river = self.get_object()  # Fetch the current River instance
+
+        # Add files and other context variables
+        context["files"] = river.files.all()  # Files uploaded to the river
+        context["starters"] = RiverMembership.objects.filter(river=river, starter=True)
         context["user"] = self.request.user
-        context["slug"] = self.object.slug
-        context["members"] = RiverMembership.objects.filter(river=context["object"].pk)
+        context["slug"] = river.slug
+        context["members"] = RiverMembership.objects.filter(river=river)
+        context["MEDIA_URL"] = settings.MEDIA_URL
+
+        # Fetch messages and filter for files
+        messages = Message.objects.filter(context_river=river)
+        context["messages"] = messages
+        context["files"] = river.files.all()  # Override to ensure only river files are displayed
+
+        # Additional context for resources
         context["resources"] = list(
             dict.fromkeys(
                 chain(
@@ -96,24 +93,50 @@ class RiverView(DetailView):
                                 ),
                             )
                         )
-                        for tag_a in self.object.tags.names()
-                        for tag_b in self.object.tags.names()
+                        for tag_a in river.tags.names()
+                        for tag_b in river.tags.names()
                         if tag_a != tag_b and tag_a > tag_b
                     ]
                 )
             )
-        )  # ensure we don't have (tag1, tag2) and (tag2, tag1) searched separately. they would be filtered out by fromkeys but might as well remove earlier on
-        context["object"].tags = tag_cluster_to_list(context["object"].tags)
+        )
+        context["object"].tags = tag_cluster_to_list(river.tags)
         context["envision_locked"] = False
-        context["plan_locked"] = context["object"].current_stage == River.Stage.ENVISION
+        context["plan_locked"] = river.current_stage == River.Stage.ENVISION
         context["act_locked"] = (
-            context["object"].current_stage == River.Stage.ENVISION
-            or context["object"].current_stage == River.Stage.PLAN
+            river.current_stage == River.Stage.ENVISION
+            or river.current_stage == River.Stage.PLAN
         )
-        context["reflect_locked"] = (
-            context["object"].current_stage != River.Stage.REFLECT
-        )
+        context["reflect_locked"] = river.current_stage != River.Stage.REFLECT
         return context
+
+    def post(self, request, slug, *args, **kwargs):
+        """
+        Handles file uploads and updates the uploaded files section dynamically using HTMX.
+        """
+        river = get_object_or_404(River, slug=slug)
+
+        # Handle file upload
+        if "file" in request.FILES:
+            uploaded_file = request.FILES["file"]
+            File.objects.create(
+                river=river,
+                file=uploaded_file,
+                uploaded_at=timezone.now(),
+            )
+
+        # If HTMX request, return the updated files section
+        if request.headers.get("HX-Request"):
+            files = river.files.all()
+            rendered_section = render_to_string(
+                "river/partials/uploaded_files_section.html",
+                {"files": files, "MEDIA_URL": settings.MEDIA_URL},
+                request=request,
+            )
+            return HttpResponse(rendered_section)
+
+        # If not an HTMX request, redirect back to the river detail page
+        return HttpResponseRedirect(request.path)
 
 
 class EditRiverView(UpdateView):
@@ -570,3 +593,19 @@ class RiverStartWizardView(SharedFuturesWizardView):
         )
 
         return redirect(river)
+
+    def river_view(request, river_id):
+        # Fetch messages related to the river
+        messages = Message.objects.filter(context_river__id=river_id)
+
+        # Filter messages with files
+        files = messages.filter(file__isnull=False)
+
+        context = {
+            'messages': messages,
+            'files': files,
+        }
+        return render(request, 'river/river.html', context)
+
+
+

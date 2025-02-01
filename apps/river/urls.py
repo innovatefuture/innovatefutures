@@ -1,7 +1,10 @@
 from typing import List, Union
 
+from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
 from django.urls import URLPattern, URLResolver, path
+
+from sfs import settings
 from task.views import (
     CreateTaskView,
     DeleteTaskView,
@@ -114,5 +117,12 @@ urlpatterns: List[Union[URLResolver, URLPattern]] = [
         DeleteTaskView.as_view(),
         name="river_task_delete",
     ),
-    # path('change/title/<str:slug>/', ManageRiverView.as_view(template_name='swimmers_list.html'), name='manage_river'),
+
+path(
+    "view/<str:slug>/files/",
+    RiverView.as_view(),
+    name="river_files",
+),
+
+
 ]
