@@ -92,4 +92,6 @@ urlpatterns: List[Union[URLResolver, URLPattern]] = [
     path("", include("allauth.urls")),
     # not to intercept any other paths that are not listed as custom but come from allauth
     path("<str:slug>/", CustomUserPersonalView.as_view(), name="user_detail"),
+
+
 ]

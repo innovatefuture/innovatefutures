@@ -25,7 +25,7 @@ from .views import (
     RiverChatUpdateView,
     RiverChatView,
     RiverStartWizardView,
-    RiverView,
+    RiverView, delete_file,
 )
 
 # !!! when adding new urls, don't forget to make them login_required if appropriate!
@@ -123,6 +123,6 @@ path(
     RiverView.as_view(),
     name="river_files",
 ),
-
+    path("delete-file/<int:file_id>/", delete_file, name="delete_file")
 
 ]

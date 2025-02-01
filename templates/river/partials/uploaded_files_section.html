@@ -3,13 +3,16 @@
   <ul class="space-y-2">
     {% for file in files %}
       <li class="flex items-center justify-between p-2 border rounded-md">
-        <a
-          href="{{ MEDIA_URL }}{{ file.file.name }}"
-          target="_blank"
-          class="text-blue-500 hover:underline truncate"
-        >
+        <a href="{{ MEDIA_URL }}{{ file.file.name }}" target="_blank" class="text-blue-500 hover:underline truncate">
           {{ file.file.name|basename }}
         </a>
+        <button
+          hx-delete="{% url 'delete_file' file.id %}"
+          hx-target="#uploaded-files-section"
+          hx-swap="innerHTML"
+          class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-md transition">
+          Delete
+        </button>
       </li>
     {% empty %}
       <p class="text-gray-500 text-sm">No files uploaded yet.</p>

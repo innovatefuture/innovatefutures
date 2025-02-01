@@ -75,6 +75,8 @@ class CustomAddDataView(TemplateView):
         context = super(CustomAddDataView, self).get_context_data(**kwargs)
         context["organisations"] = Organisation.objects.all()
         context["avatars"] = UserAvatar.objects.all()
+        unique_postcodes = PostCode.objects.values_list("code", flat=True).distinct()
+        context["postcodes"] = unique_postcodes
         return context
 
     def post(self, request: WSGIRequest) -> Union[HttpResponse, HttpResponseRedirect]:
@@ -330,6 +332,8 @@ class UserAllChatsView(UserChatsMixin, TemplateView):
     pass
 
 
+
+
 def block_user_chat(request: WSGIRequest, uuid: UUID) -> HttpResponse:
     user_to_block = CustomUser.objects.filter(uuid=uuid)[0]
     user_chat = get_userpair(request.user, user_to_block)
@@ -504,3 +508,4 @@ class CustomUserPersonalView(TemplateView):
                 return HttpResponse("Sorry, couldn't process your request, try again.")
         else:
             return HttpResponse("Sorry, couldn't process your request, try again.")
+

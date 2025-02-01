@@ -504,6 +504,21 @@ class CreateRiverPollView(TemplateView):
         }[stage]
         return ctx
 
+def delete_file(request, file_id):
+    file = get_object_or_404(File, id=file_id)
+    # Delete file from storage
+    file_path = os.path.join(settings.MEDIA_ROOT, file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # Delete from database
+    file.delete()
+
+    # Return updated file list
+    files = File.objects.all()  # Adjust based on the context
+    rendered_section = render_to_string("river/partials/uploaded_files_section.html", {"files": files}, request=request)
+    return HttpResponse(rendered_section)
+
 
 class StageContextMixin(ContextMixin):
     def get_context_data(
