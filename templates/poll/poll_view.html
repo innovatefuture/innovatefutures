@@ -1,3 +1,4 @@
+{% extends "base.html" %}
 {% load static %}
 
 {% block content %}
@@ -80,65 +81,33 @@
         {% include "partials/vertical-spacer.html" with space="5" %}
         {#  Vote options list  #}
         <ul>
-          {% for name, count, threshold in poll_results %}
-            <li x-data="{selected:null}">
-              {#  Vote option  #}
-              <div class="flex justify-between items-center px-3.5">
-                {% if request.user.is_active and not poll_closed %}
-                  <form hx-post="{% url 'poll_view' poll.uuid %}"
-                        class="m-0">
-                    <button class="button button-on-colour inline-block" type="submit">
-                      {{ name }}
-                    </button>
-                    <input type=hidden name=choice value="{{ name }}">
-                    <input type="hidden" name=slug value="{{ slug }}">
-                    {% csrf_token %}
-                  </form>
-                {% else %}
-                  <span
-                    class="text-button {% if name in poll_results_winners %}text-red{% else %}text-black/30{% endif %} inline-block"> {#  Winning option is text-red  #}
-                                        {{ name }}
-                                    </span>
-                {% endif %}
-                <button class="flex items-center gap-4"
-                        @click="selected !== 1 ? selected = 1 : selected = null">
-                                    <span class="text-meta font-kanit-700">
-                                        {{ count|length }}
-                                    </span>
-                  <div class="w-[12] h-[8] transition duration-500 ease-out"
-                       :class="{'-rotate-180': selected}">
-                    {% if count|length > 0 %} {#  only show arrow if there are voters to display  #}
-                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none"
-                           xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 7.91016L12 1.91016L10.59 0.500156L6 5.08016L1.41 0.500156L0 1.91016L6 7.91016Z"
-                              fill="#9759FF" />
-                      </svg>
-                    {% endif %}
-                  </div>
-                  {% if threshold and not poll_closed %}*{% endif %}
-                </button>
-              </div>
-              {#  Vote option voter information  #}
-              <div class="relative overflow-hidden transition-all max-h-0 duration-500"
-                   style=""
-                   x-ref="name"
-                   x-bind:style="selected == 1 ? 'max-height: ' + $refs.name.scrollHeight + 'px' : ''">
-                <div class="px-5">
-                  {% for user in count %}
-                    <div class="flex justify-between items-center pt-3">
-                      <div class="flex gap-2 items-center">
-                        <img class="h-6 w-6" src={{ user.avatar.image_url }}>
-                        <span class="text-meta-label">{{ user.display_name }}</span>
-                      </div>
-                      <p class="text-meta text-black/30">Joined {{ user.join_date|timesince }}
-                        ago</p>
-                    </div>
-                  {% endfor %}
-                </div>
-              </div>
-            </li>
-            {% include "partials/vertical-spacer.html" with space="3" %}
-          {% endfor %}
+          <!-- Vote options -->
+<ul>
+  {% for name, count, threshold in poll_results %}
+    <li x-data="{selected:null}">
+      <div class="flex justify-between items-center px-3.5">
+        {% if request.user.is_active and not poll_closed %}
+          <form hx-post="{% url 'poll_view' poll.uuid %}"
+                hx-target=".poll-wrapper"
+                hx-swap="outerHTML"
+                class="m-0">
+            <button class="button button-on-colour inline-block" type="submit">
+              {{ name }} ({{ count|length }}) <!-- ✅ This displays the vote count -->
+            </button>
+            <input type="hidden" name="choice" value="{{ name }}">
+            <input type="hidden" name="slug" value="{{ slug }}">
+            {% csrf_token %}
+          </form>
+        {% else %}
+          <span class="text-button {% if name in poll_results_winners %}text-red{% else %}text-black/30{% endif %} inline-block">
+            {{ name }} ({{ count|length }}) <!-- ✅ Vote count also shown for non-voting users -->
+          </span>
+        {% endif %}
+      </div>
+    </li>
+    {% include "partials/vertical-spacer.html" with space="3" %}
+  {% endfor %}
+</ul>
         </ul>
         {% include "partials/vertical-spacer.html" with space="6" %}
         {#  Poll timing information  #}

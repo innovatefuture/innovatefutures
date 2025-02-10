@@ -10,28 +10,28 @@
                 {{prompt}}
             </h1>
             {% include "partials/vertical-spacer.html" with space="4.5" %}
-            <form hx-post="{% url 'create_river_poll' slug stage topic %}"
-                  hx-swap="none" class="m-x" id="poll-form-{{stage}}-{{topic}}">
+
+            <!-- Determine whether to send the request to a general poll or a stage-based poll -->
+            <form hx-post="{% if stage and topic %}{% url 'create_stage_poll' slug stage topic %}{% else %}{% url 'create_general_river_poll' slug %}{% endif %}"
+                  hx-swap="none" class="m-x" id="poll-form-{{ stage|default:'general' }}-{{ topic|default:'general' }}">
                 {% csrf_token %}
-                <textarea class="block w-full h-2/3 px-3 py-1.5 rounded text-body" name=description>{{ default }}</textarea>
+
+                <textarea class="block w-full h-2/3 px-3 py-1.5 rounded text-body" name="description">{{ default }}</textarea>
+
                 {% include "partials/vertical-spacer.html" with space="6" %}
                 <p class="text-meta">
-                    Creating this poll will ask Swimmers if the above statement is acceptable. Swimmers in this River need to agree on the above statement. If there is a majority YES vote, the next stage will open.
+                    Creating this poll will ask Swimmers if the above statement is acceptable.
                 </p>
-                {% include "partials/vertical-spacer.html" with space="1.5" %}
-                <p class="text-meta">
-                    It might take some discussion, rephrasing, and more than one attempt for a poll to be passed, and that's OK!
-                </p>
+
                 {% include "partials/vertical-spacer.html" with space="6" %}
                 <span class="block flex items-center gap-3">
-                <button onclick="event.preventDefault(); removePollModal();"
-                        class="button button-on-white">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 7H3.83L9.42 1.41L8 0L0 8L8 16L9.41 14.59L3.83 9H16V7Z" fill="#9759FF"/>
-                    </svg>
-                </button>
-                <input type="submit" value="Create poll" class="button button-important" onclick="submitAndRemovePollModal()">
-            </span>
+                    <button onclick="event.preventDefault(); removePollModal();" class="button button-on-white">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 7H3.83L9.42 1.41L8 0L0 8L8 16L9.41 14.59L3.83 9H16V7Z" fill="#9759FF"/>
+                        </svg>
+                    </button>
+                    <input type="submit" value="Create poll" class="button button-important" onclick="submitAndRemovePollModal()">
+                </span>
             </form>
         </div>
     </div>
@@ -39,9 +39,13 @@
 
 <script>
     function submitAndRemovePollModal() {
-        htmx.on('#poll-form-{{stage}}-{{topic}}', 'htmx:afterRequest', function(e){htmx.ajax('GET', '{% url 'river_chat' slug stage topic %}', '#{{stage}}-chat-{{topic}}');removePollModal();})
-        document.getElementById('poll-form-{{stage}}-{{topic}}').requestSubmit();
+        htmx.on('#poll-form-{{ stage|default:'general' }}-{{ topic|default:'general' }}', 'htmx:afterRequest', function(e){
+            htmx.ajax('GET', '{% url 'view_river' slug %}', '#river-poll-section');
+            removePollModal();
+        })
+        document.getElementById('poll-form-{{ stage|default:'general' }}-{{ topic|default:'general' }}').requestSubmit();
     }
+
     function removePollModal() {
         document.getElementById('river-poll').remove();
     }

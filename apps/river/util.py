@@ -6,7 +6,7 @@ from resources.models import Resource
 from resources.models import TagCategory
 
 
-from .models import ActStage, EnvisionStage, PlanStage, ReflectStage, River
+from .models import EnvisionStage, PlanStage, ReflectStage, River
 
 
 def get_chat_containing_river(chat: Chat) -> Optional[River]:
@@ -22,14 +22,7 @@ def get_chat_containing_river(chat: Chat) -> Optional[River]:
     )
     if len(plan) != 0:
         return River.objects.get(plan_stage=plan[0])
-    act = ActStage.objects.filter(
-        Q(general_chat=chat)
-        | Q(money_chat=chat)
-        | Q(place_chat=chat)
-        | Q(time_chat=chat)
-    )
-    if len(act) != 0:
-        return River.objects.get(act_stage=act[0])
+
     reflect = ReflectStage.objects.filter(chat=chat)
     if len(reflect) != 0:
         return River.objects.get(reflect_stage=reflect[0])

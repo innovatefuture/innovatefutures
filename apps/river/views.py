@@ -15,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.core.handlers.wsgi import WSGIRequest
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse
 from django.http.request import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -27,7 +27,7 @@ from messaging.forms import ChatForm
 from messaging.models import Message
 from messaging.util import send_system_message
 from messaging.views import ChatUpdateCheck, ChatView
-from poll.models import SingleChoicePoll
+from poll.models import SingleChoicePoll, MultipleChoicePoll
 from resources.models import CaseStudy, HowTo
 from userauth.util import get_system_user, get_userpair
 
@@ -75,6 +75,7 @@ class RiverView(DetailView):
         messages = Message.objects.filter(context_river=river)
         context["messages"] = messages
         context["files"] = river.files.all()  # Override to ensure only river files are displayed
+        context["polls"] = SingleChoicePoll.objects.filter(river=river)
 
         # Additional context for resources
         context["resources"] = list(
@@ -396,6 +397,49 @@ class RiverChatUpdateView(ChatUpdateCheck):
     pass
 
 
+class CreateGeneralRiverPollView(TemplateView):
+    template_name = "create_river_poll.html"
+
+    def post(self, request: WSGIRequest, slug: str) -> HttpResponse:
+        river = get_object_or_404(River, slug=slug)
+
+        if "description" in request.POST:
+            try:
+                # Define question
+                question = "General River Poll"
+
+                # Create a new poll for the River
+                poll = SingleChoicePoll.objects.create(
+                    question=question,
+                    description=request.POST["description"],
+                    options=["yes", "no"],
+                    invalid_option=False,
+                    expires=timezone.now() + timezone.timedelta(days=7),
+                    river=river,
+                )
+
+                return HttpResponseRedirect(reverse("poll_view", args=[poll.uuid]))
+
+            except Exception as e:
+                return HttpResponse(f"Could not create poll, unknown error: {str(e)}")
+        else:
+            return HttpResponse("Could not create poll, no description supplied")
+
+    def get_context_data(self, **kwargs) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        slug = self.kwargs["slug"]
+
+        river = River.objects.get(slug=slug)
+        context["river"] = river
+        context["slug"] = slug
+        context["stage"] = None  # No stage for general polls
+        context["topic"] = None  # No topic for general polls
+        context["prompt"] = "Describe the general poll for this River"
+        context["default"] = ""
+
+        return context
+
+
 class CreateRiverPollView(TemplateView):
     template_name = "create_river_poll.html"
 
@@ -503,6 +547,33 @@ class CreateRiverPollView(TemplateView):
             "act": f"Are all {ctx['topic']}-related actions done?",
         }[stage]
         return ctx
+
+def create_river_poll(request, slug):
+    """View to create a poll directly in the river"""
+    if request.method == "POST":
+        river = get_object_or_404(River, slug=slug)
+        question = request.POST.get("question")
+        options = request.POST.getlist("options")  # Options should be a list
+        poll_type = request.POST.get("poll_type", "single")
+
+        if not question or not options:
+            return JsonResponse({"error": "Missing question or options"}, status=400)
+
+        # Determine poll type
+        poll_model = SingleChoicePoll if poll_type == "single" else MultipleChoicePoll
+
+        # Create the poll
+        new_poll = poll_model.objects.create(
+            question=question,
+            options=options,
+            expires=timezone.now() + timezone.timedelta(days=7),  # 1-week expiration
+            river=river,
+        )
+
+        return JsonResponse({"message": "Poll created successfully", "poll_id": new_poll.id})
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
 
 def delete_file(request, file_id):
     file = get_object_or_404(File, id=file_id)

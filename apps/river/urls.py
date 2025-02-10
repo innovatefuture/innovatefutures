@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
 from django.urls import URLPattern, URLResolver, path
 
+from poll.views import poll_edit, PollView, PollCreateView
 from sfs import settings
 from task.views import (
     CreateTaskView,
@@ -25,7 +26,7 @@ from .views import (
     RiverChatUpdateView,
     RiverChatView,
     RiverStartWizardView,
-    RiverView, delete_file,
+    RiverView, delete_file, create_river_poll, CreateGeneralRiverPollView,
 )
 
 # !!! when adding new urls, don't forget to make them login_required if appropriate!
@@ -123,6 +124,8 @@ path(
     RiverView.as_view(),
     name="river_files",
 ),
-    path("delete-file/<int:file_id>/", delete_file, name="delete_file")
+    path("delete-file/<int:file_id>/", delete_file, name="delete_file"),
+    path("<slug:slug>/create_poll/", CreateGeneralRiverPollView.as_view(), name="create_general_river_poll"),
+    # General poll
 
 ]
