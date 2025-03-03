@@ -11,12 +11,13 @@
         {% include "django/forms/widgets/attrs.html" %}
     >
 
-    <div class="tabs-container">
-        {% if tags %}
+    {% if tags %}
+        <div class="tabs-container">
             <!-- Tabs -->
             <div class="tabs flex border-b mb-4">
                 {% for category in tags %}
                     <button
+                        type="button"
                         class="tab-button px-4 py-2 -mb-px border border-transparent hover:border-gray-300 text-gray-600"
                         data-tab="{{ category.category_name|slugify }}"
                         {% if forloop.first %} class="active" {% endif %}
@@ -37,7 +38,8 @@
                         <div class="tags-container flex flex-wrap gap-2">
                             {% for tag in category.tags %}
                                 <button
-                                    class="tag-button px-1.5 py-1.5 rounded-sm flex items-center data-[selected]:bg-green"
+                                    type="button"
+                                    class="tag-button px-1.5 py-1.5 rounded-sm flex items-center transition-colors duration-200 data-[selected]:bg-green-500"
                                     data-tag="{{ tag }}"
                                 >
                                     <span class="text-meta-label text-black/55 uppercase leading-none whitespace-normal tracking-[0.16em]">
@@ -49,8 +51,8 @@
                     </div>
                 {% endfor %}
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 </div>
 
 <script>
@@ -59,7 +61,9 @@
         const tabContents = document.querySelectorAll('.tab-content');
 
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent any default behavior
+
                 // Deactivate all tabs
                 tabs.forEach(t => t.classList.remove('active'));
                 // Hide all tab contents
