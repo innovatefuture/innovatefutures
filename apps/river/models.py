@@ -109,70 +109,6 @@ class PlanStage(models.Model):
             return self.time_chat
 
 
-# class ActStage(models.Model):
-#     general_chat: models.ForeignKey = models.ForeignKey(
-#         Chat,
-#         default=new_chat,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_general_chat",
-#     )
-#     money_chat: models.ForeignKey = models.ForeignKey(
-#         Chat,
-#         default=new_chat,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_money_chat",
-#     )
-#     place_chat: models.ForeignKey = models.ForeignKey(
-#         Chat,
-#         default=new_chat,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_place_chat",
-#     )
-#     time_chat: models.ForeignKey = models.ForeignKey(
-#         Chat,
-#         default=new_chat,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_time_chat",
-#     )
-#     general_poll: models.ForeignKey = models.ForeignKey(
-#         "poll.SingleChoicePoll",
-#         default=None,
-#         null=True,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_general_poll",
-#     )
-#     money_poll: models.ForeignKey = models.ForeignKey(
-#         "poll.SingleChoicePoll",
-#         default=None,
-#         null=True,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_money_poll",
-#     )
-#     place_poll: models.ForeignKey = models.ForeignKey(
-#         "poll.SingleChoicePoll",
-#         default=None,
-#         null=True,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_place_poll",
-#     )
-#     time_poll: models.ForeignKey = models.ForeignKey(
-#         "poll.SingleChoicePoll",
-#         default=None,
-#         null=True,
-#         on_delete=models.SET_DEFAULT,
-#         related_name="act_time_poll",
-#     )
-#
-#     def get_chat(self, topic: str) -> Chat:
-#         if topic == "general":
-#             return self.general_chat
-#         elif topic == "money":
-#             return self.money_chat
-#         elif topic == "place":
-#             return self.place_chat
-#         elif topic == "time":
-#             return self.time_chat
-
 
 class ReflectStage(models.Model):
     general_chat: models.ForeignKey = models.ForeignKey(
@@ -186,10 +122,6 @@ class ReflectStage(models.Model):
         if topic == "general":
             return self.general_chat
         # no others
-
-
-# PROJECTS
-
 
 class RiverMembership(models.Model):
     river: models.ForeignKey = models.ForeignKey(
@@ -389,54 +321,6 @@ class River(ClusterableModel):
         )
         ps.save()
 
-    # def start_act(self) -> None:
-    #     if self.current_stage == self.Stage.PLAN:
-    #         self.current_stage = self.Stage.ACT
-    #         self.act_stage = ActStage.objects.create()
-    #
-    #         send_system_message(
-    #             kind="salmon_wizard",
-    #             chat=self.act_stage.general_chat,
-    #             context_river=self,
-    #             text="Time to act! You can share updates on how the plans are being carried out as you go, to document the flow, and discuss any changes that arise.",
-    #         )
-    #
-    #         send_system_message(
-    #             kind="salmon_wizard",
-    #             chat=self.act_stage.general_chat,
-    #             context_river=self,
-    #             text="As each aspect of the project concludes, you can use the polls in each tab to record this. When all polls have passed, you will progress to the reflect stage.",
-    #         )
-    #
-    #         if not self.location:
-    #             send_system_message(
-    #                 kind="salmon_wizard",
-    #                 chat=self.act_stage.general_chat,
-    #                 context_river=self,
-    #                 text="There is no location set yet, if you are a river starter use the settings menu to set a location",
-    #             )
-    #
-    #         send_system_message(
-    #             kind="salmon_wizard",
-    #             chat=self.act_stage.money_chat,
-    #             context_river=self,
-    #             text="Are the finances going according to plan? Are you over- or under-budget? Share and discuss money-related updates here.",
-    #         )
-    #         send_system_message(
-    #             kind="salmon_wizard",
-    #             chat=self.act_stage.place_chat,
-    #             context_river=self,
-    #             text="How is the space shaping up? Do you need to change location? Share and discuss place-related updates here.",
-    #         )
-    #         send_system_message(
-    #             kind="salmon_wizard",
-    #             chat=self.act_stage.time_chat,
-    #             context_river=self,
-    #             text="Is everything running on time? Are you overcoming any delays? Share and discuss time-related updates here.",
-    #         )
-    #         self.act_stage.save()
-    #
-    #         self.save()
 
     def make_act_general_poll(self) -> None:
         from poll.models import SingleChoicePoll
@@ -457,7 +341,7 @@ class River(ClusterableModel):
         from poll.models import MultipleChoicePoll
         from resources.models import CaseStudy, HowTo
 
-        if self.current_stage == self.Stage.ACT:
+        if self.current_stage == self.Stage.PLAN:
             self.current_stage = self.Stage.REFLECT
             self.reflect_stage = ReflectStage.objects.create()
             self.save()
@@ -513,17 +397,9 @@ class River(ClusterableModel):
                 return self.plan_stage.place_chat
             elif topic == "time":
                 return self.plan_stage.time_chat
-        elif stage == "act":
-            if topic == "general":
-                return self.act_stage.general_chat
-            elif topic == "money":
-                return self.act_stage.money_chat
-            elif topic == "place":
-                return self.act_stage.place_chat
-            elif topic == "time":
-                return self.act_stage.time_chat
-        elif stage == "reflect":
-            return self.reflect_stage.general_chat
+        # elif stage == "reflect":
+        #     return self.reflect_stage.general_chat
+
 
     def get_poll(self, stage: str, topic: str) -> Type[BasePoll]:
         if stage == "envision":
@@ -538,8 +414,8 @@ class River(ClusterableModel):
             elif topic == "time":
                 return self.plan_stage.time_poll
 
-        elif stage == "reflect":
-            return self.reflect_stage.general_poll
+        # elif stage == "reflect":
+        #     return self.reflect_stage.general_poll
 
     def get_stage(
         self, stage: str

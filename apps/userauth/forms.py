@@ -144,7 +144,7 @@ class CustomSignupForm(SignupForm):
 class CustomUserAddDataForm(forms.Form):
     display_name = forms.CharField(max_length=50)
     year_of_birth = forms.IntegerField()
-    post_code = forms.CharField(max_length=8)
+    user_area = forms.CharField(max_length=50)
     avatar = forms.CharField(max_length=2, required=False)
     organisation_name = forms.CharField(max_length=50, required=False)
     organisation_url = forms.CharField(max_length=100, required=False)

@@ -55,20 +55,20 @@
       </div>
 
       <div class="px-4 pb-9">
-        {% include "partials/input-label.html" with for="post_code" label="Postcode" %}
-        <select class="input-text input-text-invalid" id="post_code" name="post_code">
-          <option value="" disabled selected>Select your postcode</option>
-          {% for postcode in postcodes %}
-            <option value="{{ postcode }}">{{ postcode }}</option>
+        {% include "partials/input-label.html" with for="user_area" label="Userarea" %}
+        <select class="input-text input-text-invalid" id="user_area" name="user_area">
+          <option value="" disabled selected>Select your area</option>
+          {% for area in unique_areas %}
+            <option value="{{ area }}">{{ area }}</option>
           {% endfor %}
         </select>
         {% include "partials/vertical-spacer.html" with space="1.5" %}
-        {% include "partials/input-note.html" with for="post_code" label="Postcode will link you to an area. You can view all areas but only contribute in your own." %}
+        {% include "partials/input-note.html" with for="user_area" label="Area will link you to an postcode. You can view all areas but only contribute in your own." %}
       </div>
 
 
       <div class="px-4">
-        {% include "partials/input-label.html" with for="post_code" label="Select your avatar" %}
+        {% include "partials/input-label.html" with for="user_area" label="Select your avatar" %}
         {% include "partials/vertical-spacer.html" with space="6" %}
 
         <div class="flex flex-wrap gap-5 -m-1">
@@ -137,7 +137,7 @@
 
       <div class="px-5 pb-9">
         <button type="submit"
-                onclick="event.preventDefault(); validateFields()"
+                onclick=" validateFields()"
                 class="button button-on-white">
           SUBMIT
         </button>

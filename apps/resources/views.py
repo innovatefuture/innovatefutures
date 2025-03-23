@@ -1,5 +1,9 @@
+import re
 from itertools import chain
 from typing import List, Optional
+
+from django.utils.text import slugify
+from taggit.models import TaggedItem, Tag
 
 from analytics.models import AnalyticsEvent, log_resource_access
 from django.db.models import Q
@@ -61,12 +65,18 @@ def retrieve_and_chain_resources() -> List:
 def filter_and_cluster_resources(
     search_term: Optional[str], order_by: Optional[str]
 ) -> List:
+    namer_match = re.match(r"^(.*?)\s*\(.*\)", search_term)
+    namer = namer_match.group(1) if namer_match else search_term
+
+    # Generate the slug
+    slug = slugify(namer)
+    found_tag = Tag.objects.filter(name=namer).filter(slug=slug).first()
     how_tos = HowTo.objects.filter(
-        Q(title__icontains=search_term) | Q(summary__icontains=search_term)
+        Q(title__icontains=search_term) | Q(summary__icontains=search_term) |Q(tags=found_tag.id)
     ).distinct()
 
     case_studies = CaseStudy.objects.filter(
-        Q(title__icontains=search_term) | Q(summary__icontains=search_term)
+        Q(title__icontains=search_term) | Q(summary__icontains=search_term)  |Q(tags=found_tag.id)
     ).distinct()
     # can iterate over tags only after filtering
     how_tos = objects_tags_cluster_list_overwrite(how_tos)

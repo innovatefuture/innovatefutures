@@ -14,7 +14,7 @@ from allauth.account.views import (
     PasswordResetView,
     SignupView,
 )
-from area.models import PostCode, get_postcode
+from area.models import PostCode, get_postcode, Area
 from core.utils.postcode_matcher import filter_postcode
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -76,6 +76,8 @@ class CustomAddDataView(TemplateView):
         context["organisations"] = Organisation.objects.all()
         context["avatars"] = UserAvatar.objects.all()
         unique_postcodes = PostCode.objects.values_list("code", flat=True).distinct()
+        unique_areas = Area.objects.values_list("name", flat=True).distinct()
+        context["unique_areas"] = unique_areas
         context["postcodes"] = unique_postcodes
         return context
 
@@ -96,10 +98,9 @@ class CustomAddDataView(TemplateView):
         form.full_clean()
         current_user.display_name = str(form.cleaned_data.get("display_name"))
         current_user.year_of_birth = int(form.cleaned_data.get("year_of_birth"))
-
-        current_user.post_code, _ = PostCode.objects.get_or_create(
-            code=filter_postcode(form.cleaned_data.get("post_code"))
-        )
+        user_area= form.cleaned_data.get("user_area")
+        area = Area.objects.filter(name=user_area).first()
+        current_user.post_code = PostCode.objects.filter(area=area).first()
 
         if len(form.cleaned_data.get("avatar")) > 0:
             current_user.avatar, _ = UserAvatar.objects.get_or_create(

@@ -115,7 +115,15 @@ class RiverView(DetailView):
         """
         Handles file uploads and updates the uploaded files section dynamically using HTMX.
         """
+
+        ## where join get executed
         river = get_object_or_404(River, slug=slug)
+
+        if request.POST["action"] == "join":
+            RiverMembership.objects.get_or_create(user=request.user, river=river)
+
+        if request.POST["action"] == "leave":
+            RiverMembership.objects.filter(user=request.user, river=river).delete()
 
         # Handle file upload
         if "file" in request.FILES:
@@ -153,6 +161,7 @@ class EditRiverView(UpdateView):
     ) -> HttpResponse:
         # changing the river image - same code appears not to upload using put method
         river = River.objects.get(slug=slug)
+
         # print(request.body)
         form = RiverImageUpdateForm(request.POST, request.FILES, instance=river)
         if form.is_valid():
@@ -164,25 +173,7 @@ class EditRiverView(UpdateView):
         return HttpResponse(
             "Sorry, your description could not be processed, please refresh the page"
         )
-        """
-        # abdication currently disabled
-        if (RiverMembership.objects.get(river=river, user=request.user).starter == True):
-            if ('abdicate' in request.POST and request.POST['abdicate'] == 'abdicate'):
-                starters = RiverMembership.objects.filter(river=river, starter=True)
-                if (
-                        len(starters) >= 2):  # won't be orphaning the river (TODO: allow rivers to be shut down, in which case they can be orphaned. v2?)
-                    my_membership = RiverMembership.objects.get(river=river, user=request.user, starter=True)
-                    my_membership.starter = False
-                    my_membership.save()
-                    print(
-                        '!!! WARNING E !!! not sending a message to the river, because rivers no longer have one central chat. how to disseminate that information?')
-                    # send_system_message(river.chat, 'lost_ownership', context_user_a = request.user)
 
-            river.title = request.POST['title']
-            river.description = request.POST['description']
-            river.save()
-        return redirect(reverse('view_river', args=[slug]))
-        """
 
     # was able to pass the byte stream of image via put but impractical comparing to post so updating here only text and description
     def put(
@@ -250,6 +241,7 @@ class ManageRiverView(TemplateView):
     def post(self, request: WSGIRequest, slug: str) -> HttpResponse:
         river = River.objects.get(slug=slug)
         membership = RiverMembership.objects.get(id=request.POST["membership"])
+
         # security checks
         if RiverMembership.objects.get(
             user=request.user, river=river
@@ -319,6 +311,8 @@ class RiverChatView(ChatView):
 
         chat_poll = river.get_poll(kwargs["stage"], kwargs["topic"])
         stage_ref = river.get_stage(kwargs["stage"])
+
+
 
         is_member = (
             request.user.is_authenticated
@@ -403,6 +397,8 @@ class CreateGeneralRiverPollView(TemplateView):
     def post(self, request: WSGIRequest, slug: str) -> HttpResponse:
         river = get_object_or_404(River, slug=slug)
 
+
+
         if "description" in request.POST:
             try:
                 # Define question
@@ -447,6 +443,7 @@ class CreateRiverPollView(TemplateView):
         self, request: WSGIRequest, slug: str, stage: str, topic: str
     ) -> HttpResponse:
         river = River.objects.get(slug=slug)
+
         if river.current_stage == stage:
             if river.current_stage == river.Stage.ENVISION:
                 stage_ref = river.envision_stage
