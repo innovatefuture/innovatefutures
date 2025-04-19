@@ -57,7 +57,7 @@ export class HomeControl implements IControl {
             if (home) {
                 map.flyTo({
                     center: home.center,
-                    zoom: home.zoom
+                    zoom: 12
                 })
             }
         })
