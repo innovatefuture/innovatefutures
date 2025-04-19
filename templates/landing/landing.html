@@ -43,7 +43,6 @@
                 </video>
             </div>
             <div class="z-20 absolute top-0 left-0 w-full h-full flex flex-row justify-center items-center">
-                {% include "partials/button.html" with url=signup_url style="primary_colour" button="Sign up" %}
                 {% include "partials/horizontal-spacer.html" with space="4" %}
                 {% include "partials/button.html" with url=login_url style="primary_colour" button="Log in" %}
             </div>
@@ -52,7 +51,7 @@
         {% include "partials/vertical-spacer.html" with space="9" %}
 
         <div class="max-w-screen-desktop mx-auto">
-            {% include "landing/section-heading.html" with title="What Shared Futures offers" %}
+            {% include "landing/section-heading.html" with title="What Shared Futures vision" %}
             {% include "partials/vertical-spacer.html" with space="9" %}
             {% include "landing/tabbed-resources/index.html" %}
             {% include "partials/vertical-spacer.html" with space="9" %}
@@ -79,15 +78,9 @@
         </div>
 
         {% url 'resources' as resources_url %}
-        <div class="-mx-4.5 desktop:flex justify-center">
-            <div class="bg-sky grow"></div>
-            {% include "partials/call-to-action.html" with main="Would you like to find out what services and resources are available in your area?" button="See resources" url=resources_url info="" bg="bg-sky" %}
-            <div class="bg-sky w-12"></div>
-
-            <div class="bg-yellow w-12"></div>
-            {% include "partials/call-to-action.html" with main="Do you have a project in mind you would like to find like minded people to deliver?" button="Sign up" url=signup_url info="" bg="bg-yellow" %}
-            <div class="bg-yellow grow"></div>
-        </div>
+<div class="-mx-4.5 desktop:flex justify-center bg-sky">
+    {% include "partials/call-to-action.html" with main="Would you like to find out what services and resources are available in your area?" button="See resources" url=resources_url info="" bg="bg-sky" %}
+</div>
 
         {% include "partials/vertical-spacer.html" with space="3" %}
         <div class="bg-blue-light -mx-4.5">

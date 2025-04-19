@@ -1,57 +1,12 @@
-<div class="flex flex-col desktop:flex-row gap-6">
-    <div class="basis-1/2 flex flex-col gap-6">
-        <div>
-            <label for="subject" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
-                Subject
-            </label>
-            <select id="subject" name="subject" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="1">
-                <option value="resources">Suggest resources</option>
-                <option value="feedback">Send your feedback</option>
-                <option value="rollout">Enquire about roll out in your area</option>
-                <option value="bug">Report a bug</option>
-                {% if user.postcode_changes < 1 %}
-                    <option value="postcode">Change your postcode</option>
-                {% endif %}
-                <option value="other">Other</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="email" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
-                Email
-            </label>
-            <input type="email" name="email" id="email" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="2" required>
-        </div>
-
-        <div class="hidden desktop:block">
-            <button class="button bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600 transition ease-in-out duration-200" tabindex="4" type="submit">Send</button>
-        </div>
-    </div>
-
-    <div class="basis-1/2">
-        <label for="message" class="block pb-2.5 uppercase font-medium text-xs tracking-wider text-gray-700">
-            Message
-        </label>
-        <textarea name="message" id="message" cols="30" rows="12" class="input-text bg-white border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" tabindex="3"></textarea>
-    </div>
-
-    <div class="desktop:hidden">
-        <button class="button bg-blue-500 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-600 transition ease-in-out duration-200" tabindex="4" type="submit">Send</button>
+<div class="bg-white border border-gray-200 shadow-md rounded-xl p-8 max-w-xl mx-auto text-center">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Need Help?</h2>
+    <p class="text-gray-600 mb-6">
+        If you have any questions, suggestions, or need support, feel free to reach out to us.
+    </p>
+    <div class="inline-flex items-center justify-center gap-2 text-blue-600 text-lg font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12l4 4m0 0l-4 4m4-4H4" />
+        </svg>
+        <a href="mailto:pbloom@essex.ac.uk" class="hover:underline">pbloom@essex.ac.uk</a>
     </div>
 </div>
-
-{% if form.errors %}
-    <div class="bg-red-100 border border-red-400 text-red-700 p-4 rounded-md mt-4">
-        <strong class="font-semibold">Errors:</strong>
-        <ul class="mt-2">
-            {% for field, errors in form.errors.items %}
-                <li>
-                    <strong>{{ field }}:</strong>
-                    {% for error in errors %}
-                        <span class="block">{{ error }}</span>
-                    {% endfor %}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
